@@ -249,7 +249,404 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // ============================================
+    // SERVICES CAROUSEL
+    // ============================================
+    const initServicesCarousel = () => {
+        const track = document.getElementById('carousel-track');
+        const prevBtn = document.getElementById('services-prev');
+        const nextBtn = document.getElementById('services-next');
+        const dotsContainer = document.getElementById('carousel-dots');
+        const cards = document.querySelectorAll('.carousel-card');
+
+        if (!track || !prevBtn || !nextBtn || cards.length === 0) {
+            console.log('Carousel elements not found');
+            return;
+        }
+
+        let currentIndex = 0;
+        const totalCards = cards.length;
+        let cardsPerView = 3; // Desktop default
+        let autoPlayInterval;
+
+        // Calculate cards per view based on screen size
+        const updateCardsPerView = () => {
+            if (window.innerWidth < 768) {
+                cardsPerView = 1;
+            } else if (window.innerWidth < 1024) {
+                cardsPerView = 2;
+            } else {
+                cardsPerView = 3;
+            }
+        };
+
+        // Calculate total pages
+        const getTotalPages = () => Math.ceil(totalCards / cardsPerView);
+
+        // Create dots
+        const createDots = () => {
+            dotsContainer.innerHTML = '';
+            const totalPages = getTotalPages();
+            for (let i = 0; i < totalPages; i++) {
+                const dot = document.createElement('button');
+                dot.classList.add('carousel-dot');
+                dot.setAttribute('aria-label', `Ir para página ${i + 1}`);
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => goToPage(i));
+                dotsContainer.appendChild(dot);
+            }
+        };
+
+        // Update carousel position
+        const updateCarousel = () => {
+            const cardWidth = cards[0].offsetWidth;
+            const gap = 32; // 2rem gap
+            const offset = -(currentIndex * cardsPerView * (cardWidth + gap));
+            track.style.transform = `translateX(${offset}px)`;
+
+            // Update dots
+            document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+
+            // Update button states
+            const totalPages = getTotalPages();
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex >= totalPages - 1;
+        };
+
+        // Go to specific page
+        const goToPage = (pageIndex) => {
+            const totalPages = getTotalPages();
+            currentIndex = Math.max(0, Math.min(pageIndex, totalPages - 1));
+            updateCarousel();
+            resetAutoPlay();
+        };
+
+        // Next slide
+        const nextSlide = () => {
+            const totalPages = getTotalPages();
+            if (currentIndex < totalPages - 1) {
+                currentIndex++;
+            } else {
+                currentIndex = 0; // Loop back to start
+            }
+            updateCarousel();
+        };
+
+        // Previous slide
+        const prevSlide = () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+            } else {
+                const totalPages = getTotalPages();
+                currentIndex = totalPages - 1; // Loop to end
+            }
+            updateCarousel();
+        };
+
+        // Auto-play functionality
+        const startAutoPlay = () => {
+            autoPlayInterval = setInterval(() => {
+                nextSlide();
+            }, 4000); // 4 seconds
+        };
+
+        const stopAutoPlay = () => {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+            }
+        };
+
+        const resetAutoPlay = () => {
+            stopAutoPlay();
+            startAutoPlay();
+        };
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            prevSlide();
+            resetAutoPlay();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            resetAutoPlay();
+        });
+
+        // Pause on hover
+        track.addEventListener('mouseenter', stopAutoPlay);
+        track.addEventListener('mouseleave', startAutoPlay);
+
+        // Touch/Swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        track.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            stopAutoPlay();
+        });
+
+        track.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+            startAutoPlay();
+        });
+
+        const handleSwipe = () => {
+            if (touchEndX < touchStartX - 50) nextSlide(); // Swipe left
+            if (touchEndX > touchStartX + 50) prevSlide(); // Swipe right
+        };
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+                resetAutoPlay();
+            }
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+                resetAutoPlay();
+            }
+        });
+
+        // Responsive handling
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                updateCardsPerView();
+                currentIndex = 0; // Reset to first page on resize
+                createDots();
+                updateCarousel();
+            }, 250);
+        });
+
+        // Initialize
+        updateCardsPerView();
+        createDots();
+        updateCarousel();
+        startAutoPlay(); // Start auto-play
+
+        console.log('Carousel initialized with auto-play (4s interval)');
+    };
+
+    // Initialize carousel
+    initServicesCarousel();
+
+    // ============================================
+    // TESTIMONIALS CAROUSEL
+    // ============================================
+    const initTestimonialsCarousel = () => {
+        const track = document.getElementById('testimonials-track');
+        const prevBtn = document.getElementById('testimonials-prev');
+        const nextBtn = document.getElementById('testimonials-next');
+        const dotsContainer = document.getElementById('testimonials-dots');
+        const cards = document.querySelectorAll('#testimonials-track .carousel-card');
+
+        if (!track || !prevBtn || !nextBtn || cards.length === 0) {
+            console.log('Testimonials carousel elements not found');
+            return;
+        }
+
+        let currentIndex = 0;
+        const totalCards = cards.length;
+        let cardsPerView = 3; // Desktop default
+        let autoPlayInterval;
+
+        // Calculate cards per view based on screen size
+        const updateCardsPerView = () => {
+            if (window.innerWidth < 768) {
+                cardsPerView = 1;
+            } else if (window.innerWidth < 1024) {
+                cardsPerView = 2;
+            } else {
+                cardsPerView = 3;
+            }
+        };
+
+        // Calculate total pages
+        const getTotalPages = () => Math.ceil(totalCards / cardsPerView);
+
+        // Create dots
+        const createDots = () => {
+            dotsContainer.innerHTML = '';
+            const totalPages = getTotalPages();
+            for (let i = 0; i < totalPages; i++) {
+                const dot = document.createElement('button');
+                dot.classList.add('carousel-dot');
+                dot.setAttribute('aria-label', `Ir para página ${i + 1}`);
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => goToPage(i));
+                dotsContainer.appendChild(dot);
+            }
+        };
+
+        // Update carousel position
+        const updateCarousel = () => {
+            const cardWidth = cards[0].offsetWidth;
+            const gap = 32; // 2rem gap
+            const offset = -(currentIndex * cardsPerView * (cardWidth + gap));
+            track.style.transform = `translateX(${offset}px)`;
+
+            // Update dots
+            document.querySelectorAll('#testimonials-dots .carousel-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+
+            // Update button states
+            const totalPages = getTotalPages();
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex >= totalPages - 1;
+        };
+
+        // Go to specific page
+        const goToPage = (pageIndex) => {
+            const totalPages = getTotalPages();
+            currentIndex = Math.max(0, Math.min(pageIndex, totalPages - 1));
+            updateCarousel();
+            resetAutoPlay();
+        };
+
+        // Next slide
+        const nextSlide = () => {
+            const totalPages = getTotalPages();
+            if (currentIndex < totalPages - 1) {
+                currentIndex++;
+            } else {
+                currentIndex = 0; // Loop back to start
+            }
+            updateCarousel();
+        };
+
+        // Previous slide
+        const prevSlide = () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+            } else {
+                const totalPages = getTotalPages();
+                currentIndex = totalPages - 1; // Loop to end
+            }
+            updateCarousel();
+        };
+
+        // Auto-play functionality
+        const startAutoPlay = () => {
+            autoPlayInterval = setInterval(() => {
+                nextSlide();
+            }, 4000); // 4 seconds
+        };
+
+        const stopAutoPlay = () => {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+            }
+        };
+
+        const resetAutoPlay = () => {
+            stopAutoPlay();
+            startAutoPlay();
+        };
+
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            prevSlide();
+            resetAutoPlay();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            resetAutoPlay();
+        });
+
+        // Pause on hover
+        track.addEventListener('mouseenter', stopAutoPlay);
+        track.addEventListener('mouseleave', startAutoPlay);
+
+        // Touch/Swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        track.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            stopAutoPlay();
+        });
+
+        track.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+            startAutoPlay();
+        });
+
+        const handleSwipe = () => {
+            if (touchEndX < touchStartX - 50) nextSlide(); // Swipe left
+            if (touchEndX > touchStartX + 50) prevSlide(); // Swipe right
+        };
+
+        // Responsive handling
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                updateCardsPerView();
+                currentIndex = 0; // Reset to first page on resize
+                createDots();
+                updateCarousel();
+            }, 250);
+        });
+
+        // Initialize
+        updateCardsPerView();
+        createDots();
+        updateCarousel();
+        startAutoPlay(); // Start auto-play
+
+        console.log('Testimonials carousel initialized with auto-play (4s interval)');
+    };
+
+    // Initialize testimonials carousel
+    initTestimonialsCarousel();
+
     console.log('W Despachante website loaded successfully! 🚀');
+
+    // ============================================
+    // IMAGE ZOOM MODAL
+    // ============================================
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const closeBtn = document.querySelector('.modal-close');
+    const calendarImages = document.querySelectorAll('.calendar-zoom');
+
+    // Add click event to all calendar images
+    calendarImages.forEach(img => {
+        img.addEventListener('click', function () {
+            modal.style.display = 'block';
+            modalImg.src = this.src;
+            modalCaption.textContent = this.alt;
+        });
+    });
+
+    // Close modal when clicking the X
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            modal.style.display = 'none';
+        });
+    }
+
+    // Close modal when clicking outside the image
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            modal.style.display = 'none';
+        }
+    });
 });
 
 // === EXTERNAL FUNCTIONS ===
